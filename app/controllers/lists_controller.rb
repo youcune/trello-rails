@@ -4,7 +4,7 @@ class ListsController < ApplicationController
   # GET /lists
   # GET /lists.json
   def index
-    @lists = List.all
+    @lists = List.all.includes(:cards)
   end
 
   # GET /lists/1
@@ -24,16 +24,13 @@ class ListsController < ApplicationController
   # POST /lists
   # POST /lists.json
   def create
+    sleep 0.3
     @list = List.find_or_initialize_by(id: params[:id])
 
-    respond_to do |format|
-      if @list.update(list_params)
-        format.html { redirect_to @list, notice: 'List was successfully created.' }
-        format.json { render :show, status: :created, location: @list }
-      else
-        format.html { render :new }
-        format.json { render json: @list.errors, status: :unprocessable_entity }
-      end
+    if @list.update(list_params)
+      render :show, status: :created, location: @list
+    else
+      render json: @list.errors, status: :unprocessable_entity
     end
   end
 
