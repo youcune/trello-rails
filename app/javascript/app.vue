@@ -1,22 +1,72 @@
 <template>
   <div id="app">
-    <p>{{ message }}</p>
+    <div v-for="list in lists" class="list">
+      <template v-if="list.in_edit">
+        <input type="text" class="form-control" v-model="list.name" @blur="updateList(list)">
+      </template>
+      <div v-else class="name" @click="editList(list)">
+        {{ list.name }}
+      </div>
+    </div>
+    <div class="list">
+      <button class="btn btn-primary" @click="createList()">＋もう1つリストを追加</button>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  data: function () {
+  data() {
     return {
-      message: "Hello Vue!"
+      lists: [],
+      editing: null
     }
+  },
+  mounted() {
+    fetch('/lists.json')
+      .then(response => this.lists = response.json());
+  },
+  methods: {
+    createList() {
+      this.lists.push({
+        id: null,
+        name: '',
+        in_edit: true,
+        in_sync: true,
+      })
+    },
+    editList(list) {
+      list.in_edit = true;
+    },
+    updateList(list) {
+      list.in_edit = false;
+      list.in_sync = true;
+    },
   }
 }
 </script>
 
-<style scoped>
-p {
-  font-size: 2em;
-  text-align: center;
+<style lang="scss" scoped>
+#app {
+  white-space: nowrap;
+  overflow: scroll;
+}
+.list {
+  width: 240px;
+  display: inline-block;
+  padding: 1rem;
+  border: 1px solid #999999;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
+
+  .name {
+    border: 1px solid #ffffff;
+    border-radius: .25rem;
+    padding: .375rem .75rem;
+
+    &:hover {
+      border: 1px solid #ced4da;
+    }
+  }
 }
 </style>
