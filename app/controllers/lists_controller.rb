@@ -24,7 +24,7 @@ class ListsController < ApplicationController
   # POST /lists
   # POST /lists.json
   def create
-    @list = find_or_initialize_by(id: params[:id])
+    @list = List.find_or_initialize_by(id: params[:id])
 
     respond_to do |format|
       if @list.update(list_params)

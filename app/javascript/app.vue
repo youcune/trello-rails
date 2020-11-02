@@ -2,7 +2,7 @@
   <div id="app">
     <div v-for="list in lists" class="list">
       <template v-if="list.in_edit">
-        <input type="text" class="form-control" v-model="list.name" @blur="updateList(list)">
+        <input type="text" class="form-control" v-model="list.name" @blur="postList(list)">
       </template>
       <div v-else class="name" @click="editList(list)">
         {{ list.name }}
@@ -24,7 +24,8 @@ export default {
   },
   mounted() {
     fetch('/lists.json')
-      .then(response => this.lists = response.json());
+      .then(response => response.json())
+      .then(data => this.lists = data);
   },
   methods: {
     createList() {
@@ -32,15 +33,27 @@ export default {
         id: null,
         name: '',
         in_edit: true,
-        in_sync: true,
+        in_sync: false,
       })
     },
     editList(list) {
       list.in_edit = true;
     },
-    updateList(list) {
+    postList(list) {
       list.in_edit = false;
       list.in_sync = true;
+
+      fetch('/lists.json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: list.id, list: { name: list.name } })
+      })
+        .then(response => response.json())
+        .then(data => {
+          list.in_sync = false;
+        });
     },
   }
 }
