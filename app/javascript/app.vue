@@ -12,7 +12,13 @@
       </div>
       <div class="name">
         <template v-if="list.in_edit">
-          <input type="text" class="form-control" v-model="list.name" @blur="postList(list)">
+          <input
+            type="text"
+            class="form-control"
+            v-model="list.name"
+            @blur="postList(list)"
+            @keydown.13="$event.target.blur()"
+          >
         </template>
         <div v-else @click="editList(list)">
           {{ list.name }}
@@ -28,7 +34,13 @@
           <i class="fas fa-sync fa-spin" v-if="card.in_sync"></i>
         </div>
         <template v-if="card.in_edit">
-          <input type="text" class="form-control" v-model="card.name" @blur="postCard(card, list.id)">
+          <input
+            type="text"
+            class="form-control"
+            v-model="card.name"
+            @blur="postCard(card, list.id)"
+            @keydown.13="$event.target.blur()"
+          >
         </template>
         <div v-else @click="editCard(card)">
           {{ card.name }}
@@ -62,6 +74,10 @@ export default {
         in_edit: true,
         in_sync: false,
       });
+
+      this.$nextTick(function (){
+        document.querySelector('input').focus();
+      });
     },
     indexList() {
       fetch('/lists.json')
@@ -72,6 +88,10 @@ export default {
     },
     editList(list) {
       list.in_edit = true;
+
+      this.$nextTick(function (){
+        document.querySelector('input').focus();
+      });
     },
     postList(list) {
       list.in_edit = false;
@@ -98,9 +118,17 @@ export default {
         in_edit: true,
         in_sync: false,
       });
+
+      this.$nextTick(function (){
+        document.querySelector('input').focus();
+      });
     },
     editCard(card) {
       card.in_edit = true;
+
+      this.$nextTick(function (){
+        document.querySelector('input').focus();
+      });
     },
     postCard(card, list_id) {
       card.in_edit = false;
