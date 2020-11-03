@@ -1,6 +1,12 @@
 <template>
   <div id="app">
-    <div v-for="list in lists" class="list">
+    <div
+      v-for="list in lists"
+      class="list"
+      :id="`list-${list.id}`"
+      @dragover.prevent
+      @drop="dropOnList($event, list)"
+    >
       <div class="status">
         <i class="fas fa-sync fa-spin" v-if="list.in_sync"></i>
       </div>
@@ -12,8 +18,13 @@
           {{ list.name }}
         </div>
       </div>
-      <div v-for="card in list.cards" class="card">
-        <div class="status">
+      <div
+        v-for="card in list.cards"
+        class="card" :id="`card-${card.id}`"
+        :draggable="canDragCard(card) ? true : false"
+        @dragstart="dragStartCard($event, card)"
+      >
+       <div class="status">
           <i class="fas fa-sync fa-spin" v-if="card.in_sync"></i>
         </div>
         <template v-if="card.in_edit">
@@ -26,7 +37,7 @@
       <button class="btn btn-primary" @click="newCardTo(list)">＋カードを追加</button>
     </div>
     <div class="list">
-      <button class="btn btn-primary" @click="newList()">＋リストを追加</button>
+      <button class="btn btn-primary" @click="newList">＋リストを追加</button>
     </div>
   </div>
 </template>
@@ -82,6 +93,7 @@ export default {
     newCardTo(list) {
       list.cards.push({
         id: null,
+        list_id: list.id,
         name: '',
         in_edit: true,
         in_sync: false,
@@ -107,6 +119,32 @@ export default {
           card.in_sync = false;
         });
     },
+    canDragCard(card) {
+      return !card.in_edit && card.id
+    },
+    dragStartCard(event, card) {
+      // DOMString しか渡せないので JSON にしている
+      event.dataTransfer.setData('application/trello-rails-card', JSON.stringify(card));
+      event.dataTransfer.effectAllowed = 'move';
+    },
+    dropOnList(event, targetList) {
+      const sourceCard = JSON.parse(event.dataTransfer.getData('application/trello-rails-card'));
+      sourceCard.in_sync = true;
+
+      const sourceList = this.lists.find(l => l.id == sourceCard.list_id);
+      sourceList.cards = sourceList.cards.filter(c => c.id != sourceCard.id);
+      targetList.cards.push(Object.assign(sourceCard, { list_id: targetList.id }));
+
+      fetch(`/cards/${sourceCard.id}.json`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ card: { list_id: targetList.id } })
+      })
+        .then(response => response.json())
+        .then(_ => sourceCard.in_sync = false);
+    }
   }
 }
 </script>
@@ -114,6 +152,7 @@ export default {
 <style lang="scss" scoped>
 #app {
   white-space: nowrap;
+  height: 90%;
   overflow: scroll;
 }
 .list {
@@ -128,12 +167,17 @@ export default {
 
   .status {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: .25rem;
+    right: .25rem;
   }
 
   .name {
     margin-bottom: 1rem;
+    font-weight: bold;
+
+    input {
+      font-weight: bold;
+    }
 
     div {
       border: 1px solid #ffffff;
@@ -150,5 +194,9 @@ export default {
     margin-bottom: 1rem;
     padding: 0.5rem;
   }
+}
+
+[draggable] {
+  cursor: grab;
 }
 </style>

@@ -1,28 +1,8 @@
 class CardsController < ApplicationController
-  before_action :set_card, only: [:show, :edit, :update, :destroy]
+  before_action :set_card, only: [:update, :destroy]
 
-  # GET /cards
-  # GET /cards.json
-  def index
-    @cards = Card.all
-  end
-
-  # GET /cards/1
-  # GET /cards/1.json
-  def show
-  end
-
-  # GET /cards/new
-  def new
-    @card = Card.new
-  end
-
-  # GET /cards/1/edit
-  def edit
-  end
-
-  # POST /cards
   # POST /cards.json
+  # create or update name
   def create
     sleep 0.3
     @card = Card.find_or_initialize_by(id: params[:id])
@@ -32,6 +12,15 @@ class CardsController < ApplicationController
     else
       render json: @card.errors, status: :unprocessable_entity
     end
+  end
+
+  # PUT /cards/1.json
+  # move to another list
+  def update
+    sleep 0.3
+
+    @card.update(card_params)
+    render json: { status: 'OK' }, status: :ok
   end
 
   # DELETE /cards/1
