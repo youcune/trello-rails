@@ -38,7 +38,7 @@
             type="text"
             class="form-control"
             v-model="card.name"
-            @blur="postCard(card, list.id)"
+            @blur="postCard(card, list)"
             @keydown.13="$event.target.blur()"
           >
         </template>
@@ -97,18 +97,22 @@ export default {
       list.in_edit = false;
       list.in_sync = true;
 
-      fetch('/lists.json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id: list.id, list: { name: list.name } })
-      })
-        .then(response => response.json())
-        .then(data => {
-          list.id = data.id;
-          list.in_sync = false;
-        });
+      this.lists = this.lists.filter(l => l.name != '' && l.id != null);
+
+      if (list.name != '') {
+        fetch('/lists.json', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: list.id, list: { name: list.name } })
+        })
+          .then(response => response.json())
+          .then(data => {
+            list.id = data.id;
+            list.in_sync = false;
+          });
+      }
     },
     newCardTo(list) {
       list.cards.push({
@@ -130,22 +134,26 @@ export default {
         document.querySelector('input').focus();
       });
     },
-    postCard(card, list_id) {
+    postCard(card, list) {
       card.in_edit = false;
       card.in_sync = true;
 
-      fetch('/cards.json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id: card.id, card: { list_id, name: card.name } })
-      })
-        .then(response => response.json())
-        .then(data => {
-          card.id = data.id;
-          card.in_sync = false;
-        });
+      list.cards = list.cards.filter(c => c.name != '' || c.id != null);
+
+      if (card.name != '') {
+        fetch('/cards.json', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({id: card.id, card: {list_id: list.id, name: card.name}})
+        })
+          .then(response => response.json())
+          .then(data => {
+            card.id = data.id;
+            card.in_sync = false;
+          });
+      }
     },
     canDragCard(card) {
       return !card.in_edit && card.id
