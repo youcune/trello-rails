@@ -94,12 +94,12 @@ export default {
       });
     },
     postList(list) {
-      list.in_edit = false;
-      list.in_sync = true;
-
       this.lists = this.lists.filter(l => l.name != '' && l.id != null);
 
       if (list.name != '') {
+        list.in_edit = false;
+        list.in_sync = true;
+
         fetch('/lists.json', {
           method: 'POST',
           headers: {
@@ -135,12 +135,12 @@ export default {
       });
     },
     postCard(card, list) {
-      card.in_edit = false;
-      card.in_sync = true;
-
       list.cards = list.cards.filter(c => c.name != '' || c.id != null);
 
       if (card.name != '') {
+        card.in_edit = false;
+        card.in_sync = true;
+
         fetch('/cards.json', {
           method: 'POST',
           headers: {
